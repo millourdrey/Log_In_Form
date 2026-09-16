@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Edit Profile</title>
+</head>
+<body>
+    <main class="form-card">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
+        <h1>Edit Profile</h1>
+        <p>Update your personal information.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('edit_profile') }}" method="post">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" value="{{ user['first_name'] }}" required>
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" value="{{ user['last_name'] }}" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ user['email'] }}" required>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ user['username'] }}" required>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" value="{{ user['phone'] }}" required>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" value="{{ user['address'] }}" required>
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" name="dob" value="{{ user['dob'] }}" required>
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                {% for option in ['Male', 'Female', 'Other', 'Prefer not to say'] %}
+                <option value="{{ option }}" {% if user['gender'] == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Save Changes">
+        </form>
+        <p><a href="{{ url_for('profile') }}">Cancel</a></p>
+    </main>
+</body>
+</html>

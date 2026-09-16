@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>My Profile</title>
+</head>
+
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="sidebar-logo">
+            <div class="brand">My Dashboard</div>
+            <nav>
+                <a href="{{ url_for('dashboard') }}">Home</a>
+                <a href="{{ url_for('profile') }}" class="active">Profile</a>
+                {% if user['role'] == 'admin' %}
+                <a href="{{ url_for('create_account') }}">Create Account</a>
+                {% endif %}
+            </nav>
+            <a href="{{ url_for('logout') }}" class="logout">Sign Out</a>
+        </aside>
+
+        <main class="dashboard-content">
+            <header class="dashboard-header">
+                <div>
+                    <h1>My Profile</h1>
+                    <p>Personal Information</p>
+                </div>
+                <div class="profile-icon">
+                    <img src="{{ url_for('static', filename='prof.jpg') }}" alt="Profile picture" width="50" height="50">
+                </div>
+            </header>
+
+            <section class="profile-card">
+                <h2>{{ user['first_name'] }} {{ user['last_name'] }}</h2>
+                <p class="profile-role">{{ user['role'].title() }} · Bachelor of Science in Information Technology</p>
+                <a href="{{ url_for('edit_profile') }}" class="main-button">Edit Profile</a>
+
+                <div class="personal-info">
+                    <div class="info-row"><strong>First Name:</strong><span>{{ user['first_name'] }}</span></div>
+                    <div class="info-row"><strong>Last Name:</strong><span>{{ user['last_name'] }}</span></div>
+                    <div class="info-row"><strong>Username:</strong><span>{{ user['username'] }}</span></div>
+                    <div class="info-row"><strong>Email:</strong><span>{{ user['email'] }}</span></div>
+                    <div class="info-row"><strong>Phone:</strong><span>{{ user['phone'] or 'Not provided' }}</span></div>
+                    <div class="info-row"><strong>Address:</strong><span>{{ user['address'] or 'Not provided' }}</span></div>
+                    <div class="info-row"><strong>Date of Birth:</strong><span>{{ user['dob'] }}</span></div>
+                    <div class="info-row"><strong>Gender:</strong><span>{{ user['gender'] }}</span></div>
+                    <div class="info-row"><strong>Role:</strong><span>{{ user['role'].title() }}</span></div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

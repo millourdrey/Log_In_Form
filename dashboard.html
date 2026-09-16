@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Dashboard</title>
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <aside class="sidebar">
+
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="sidebar-logo">
+
+            <div class="brand">
+                My Dashboard
+            </div>
+
+            <nav>
+                <a href="{{ url_for('dashboard') }}" class="active">Home</a>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                {% if user['role'] == 'admin' %}
+                <a href="{{ url_for('create_account') }}">Create Account</a>
+                <a href="{{ url_for('announcements') }}">Announcements</a>
+                {% endif %}
+            </nav>
+
+            <a href="{{ url_for('logout') }}" class="logout">Sign Out</a>
+        </aside>
+
+        <main class="dashboard-content">
+            <header class="dashboard-header">
+                <div>
+                    <p class="eyebrow">{{ user['role'].title() }} Dashboard</p>
+                    <h1>Welcome back, {{ user['first_name'] }}!</h1>
+                    <p>Bachelor of Science in Information Technology</p>
+                </div>
+                <img src="{{ url_for('static', filename='prof.jpg') }}"
+                    alt="Profile picture of {{ user['first_name'] }}" class="header-profile-picture">
+            </header>
+
+            <section class="welcome-box">
+                <h2>Your {{ user['role'] }} space</h2>
+                <p>Keep your account details up to date and use this page as a quick overview of your profile.</p>
+                <a href="{{ url_for('profile') }}" class="main-button">View Profile</a>
+            </section>
+
+            <section class="cards" aria-label="Account summary">
+                <article class="stat-card">
+                    <h3>Full Name</h3>
+                    <p>{{ user['first_name'] }} {{ user['last_name'] }}</p>
+                </article>
+                <article class="stat-card">
+                    <h3>Username</h3>
+                    <p>{{ user['username'] }}</p>
+                </article>
+                <article class="stat-card">
+                    <h3>Email Address</h3>
+                    <p>{{ user['email'] }}</p>
+                </article>
+                <article class="stat-card">
+                    <h3>Account Role</h3>
+                    <p>{{ user['role'].title() }}</p>
+                </article>
+            </section>
+
+            <section class="notice-board" aria-labelledby="notice-board-title">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="notice-board-title">School Announcements</h2>
+                        <p>Important updates from the school administration.</p>
+                    </div>
+                    {% if user['role'] == 'admin' %}
+                    <a href="{{ url_for('announcements') }}" class="main-button">Post Announcement</a>
+                    {% endif %}
+                </div>
+                {% if notices %}
+                    {% for notice in notices %}
+                    <article class="notice-item">
+                        <h3>{{ notice['title'] }}</h3>
+                        <p>{{ notice['body'] }}</p>
+                        <time datetime="{{ notice['created_at'] }}">{{ notice['created_at'] }}</time>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                <p class="empty-state">There are no announcements yet.</p>
+                {% endif %}
+            </section>
+
+            {% if user['role'] == 'admin' %}
+            <section class="admin-status-overview" aria-labelledby="status-overview-title">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="status-overview-title">Staff and Student Status</h2>
+                        <p>Current account status for every staff member and student.</p>
+                    </div>
+                    <a href="{{ url_for('create_account') }}" class="main-button">Manage Accounts</a>
+                </div>
+
+                {% if account_statuses %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for account in account_statuses %}
+                            <tr>
+                                <td>{{ account['first_name'] }} {{ account['last_name'] }}</td>
+                                <td>{{ account['username'] }}</td>
+                                <td>{{ account['role'].title() }}</td>
+                                <td><span class="status {{ account['status'] }}">{{ account['status'].title() }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">No staff or student accounts have been created yet.</p>
+                {% endif %}
+            </section>
+            {% endif %}
+        </main>
+    </div>
+
+</body>
+</html>
