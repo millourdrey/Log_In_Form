@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Student Roster | School Portal</title>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="School logo" class="sidebar-logo">
+            <div class="brand">School Portal</div>
+            <nav>
+                <a href="{{ url_for('dashboard') }}">Home</a>
+                <a href="{{ url_for('staff_students') }}" class="active">Student Roster</a>
+                <a href="{{ url_for('announcements') }}">Announcements</a>
+                <a href="{{ url_for('profile') }}">Profile</a>
+                {% if user_role == 'admin' %}<a href="{{ url_for('create_account') }}">Manage Accounts</a>{% endif %}
+            </nav>
+            <a href="{{ url_for('logout') }}" class="logout">Sign Out</a>
+        </aside>
+        <main class="dashboard-content">
+            <header class="dashboard-header">
+                <div>
+                    <p class="eyebrow">Staff tools</p>
+                    <h1>Student Roster</h1>
+                    <p>Active student accounts in the school portal.</p>
+                </div>
+            </header>
+            <section class="admin-status-overview roster-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Students</h2>
+                        <p>{{ students|length }} active student{{ '' if students|length == 1 else 's' }}</p>
+                    </div>
+                </div>
+                {% if students %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Student Name</th><th>Username</th></tr></thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr><td>{{ student['first_name'] }} {{ student['last_name'] }}</td><td>{{ student['username'] }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">There are no active student accounts yet.</p>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+</body>
+</html>

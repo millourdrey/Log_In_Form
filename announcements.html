@@ -10,7 +10,7 @@
     <main class="form-card wide-card">
         <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
         <h1>School Announcements</h1>
-        <p>Publish notices for staff and students.</p>
+        <p>Share school news and important updates with staff and students.</p>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% for category, message in messages %}

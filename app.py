@@ -338,7 +338,7 @@ def create_account():
 
 @app.route("/admin/announcements", methods=["GET", "POST"])
 def announcements():
-    """Let administrators publish notices for the school community."""
+    """Let administrators and staff publish notices for the school community."""
     if "user_id" not in session:
         return redirect(url_for("login_page"))
 
@@ -346,9 +346,9 @@ def announcements():
     current_user = conn.execute(
         "SELECT role FROM users WHERE id = ?", (session["user_id"],)
     ).fetchone()
-    if current_user is None or current_user["role"] != "admin":
+    if current_user is None or current_user["role"] not in {"admin", "staff"}:
         conn.close()
-        flash("Only administrators can manage announcements.", "error")
+        flash("Only school administrators and staff can manage announcements.", "error")
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
@@ -377,6 +377,30 @@ def announcements():
     ).fetchall()
     conn.close()
     return render_template("announcements.html", notices=notices)
+
+
+@app.route("/staff/students")
+def staff_students():
+    """Show staff a minimal roster without exposing student contact details."""
+    if "user_id" not in session:
+        return redirect(url_for("login_page"))
+
+    conn = get_db()
+    current_user = conn.execute(
+        "SELECT role FROM users WHERE id = ?", (session["user_id"],)
+    ).fetchone()
+    if current_user is None or current_user["role"] not in {"admin", "staff"}:
+        conn.close()
+        flash("Only school staff can view the student roster.", "error")
+        return redirect(url_for("dashboard"))
+
+    students = conn.execute(
+        """SELECT first_name, last_name, username
+           FROM users WHERE role = 'student' AND status = 'active'
+           ORDER BY last_name, first_name"""
+    ).fetchall()
+    conn.close()
+    return render_template("staff_students.html", students=students, user_role=current_user["role"])
 
 
 @app.route("/admin/accounts/<int:account_id>/status", methods=["POST"])

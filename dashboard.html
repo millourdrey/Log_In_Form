@@ -17,14 +17,17 @@
             <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="sidebar-logo">
 
             <div class="brand">
-                My Dashboard
+                School Portal
             </div>
 
             <nav>
                 <a href="{{ url_for('dashboard') }}" class="active">Home</a>
                 <a href="{{ url_for('profile') }}">Profile</a>
                 {% if user['role'] == 'admin' %}
-                <a href="{{ url_for('create_account') }}">Create Account</a>
+                <a href="{{ url_for('create_account') }}">Manage Accounts</a>
+                <a href="{{ url_for('announcements') }}">Announcements</a>
+                {% elif user['role'] == 'staff' %}
+                <a href="{{ url_for('staff_students') }}">Student Roster</a>
                 <a href="{{ url_for('announcements') }}">Announcements</a>
                 {% endif %}
             </nav>
@@ -37,16 +40,27 @@
                 <div>
                     <p class="eyebrow">{{ user['role'].title() }} Dashboard</p>
                     <h1>Welcome back, {{ user['first_name'] }}!</h1>
-                    <p>Bachelor of Science in Information Technology</p>
+                    <p>School community portal</p>
                 </div>
                 <img src="{{ url_for('static', filename='prof.jpg') }}"
                     alt="Profile picture of {{ user['first_name'] }}" class="header-profile-picture">
             </header>
 
-            <section class="welcome-box">
-                <h2>Your {{ user['role'] }} space</h2>
-                <p>Keep your account details up to date and use this page as a quick overview of your profile.</p>
-                <a href="{{ url_for('profile') }}" class="main-button">View Profile</a>
+            <section class="welcome-box role-welcome role-{{ user['role'] }}">
+                {% if user['role'] == 'admin' %}
+                <h2>Administration</h2>
+                <p>Manage school accounts, keep the community informed, and review account status.</p>
+                <a href="{{ url_for('create_account') }}" class="main-button">Manage School Accounts</a>
+                {% elif user['role'] == 'staff' %}
+                <h2>Staff workspace</h2>
+                <p>Find active students in the school roster and share important updates with the community.</p>
+                <a href="{{ url_for('staff_students') }}" class="main-button">Open Student Roster</a>
+                <a href="{{ url_for('announcements') }}" class="secondary-button">Post an Announcement</a>
+                {% else %}
+                <h2>Student portal</h2>
+                <p>Check school announcements and keep your personal information current.</p>
+                <a href="{{ url_for('profile') }}" class="main-button">View My Profile</a>
+                {% endif %}
             </section>
 
             <section class="cards" aria-label="Account summary">
@@ -72,10 +86,10 @@
                 <div class="section-heading">
                     <div>
                         <h2 id="notice-board-title">School Announcements</h2>
-                        <p>Important updates from the school administration.</p>
+                    <p>Important updates from the school community.</p>
                     </div>
-                    {% if user['role'] == 'admin' %}
-                    <a href="{{ url_for('announcements') }}" class="main-button">Post Announcement</a>
+                {% if user['role'] in ['admin', 'staff'] %}
+                    <a href="{{ url_for('announcements') }}" class="main-button">Manage Announcements</a>
                     {% endif %}
                 </div>
                 {% if notices %}
