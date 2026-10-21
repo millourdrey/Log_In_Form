@@ -15,12 +15,18 @@
             <div class="brand">My Dashboard</div>
             <nav>
                 <a href="{{ url_for('dashboard') }}">Home</a>
+                <a href="{{ url_for('academics') }}">Academics</a>
                 <a href="{{ url_for('profile') }}" class="active">Profile</a>
+                <a href="{{ url_for('change_password') }}">Change Password</a>
+                <a href="{{ url_for('help_page') }}">How to Use</a>
                 {% if user['role'] == 'admin' %}
                 <a href="{{ url_for('create_account') }}">Create Account</a>
                 {% endif %}
             </nav>
-            <a href="{{ url_for('logout') }}" class="logout">Sign Out</a>
+            <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-button">Sign Out</button>
+            </form>
         </aside>
 
         <main class="dashboard-content">
@@ -38,6 +44,7 @@
                 <h2>{{ user['first_name'] }} {{ user['last_name'] }}</h2>
                 <p class="profile-role">{{ user['role'].title() }} · Bachelor of Science in Information Technology</p>
                 <a href="{{ url_for('edit_profile') }}" class="main-button">Edit Profile</a>
+                <a href="{{ url_for('change_password') }}" class="secondary-button">Change Password</a>
 
                 <div class="personal-info">
                     <div class="info-row"><strong>First Name:</strong><span>{{ user['first_name'] }}</span></div>

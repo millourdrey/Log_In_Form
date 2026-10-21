@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Edit Student Details</title>
+</head>
+<body>
+    <main class="form-card">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
+        <h1>Edit Student Details</h1>
+        <p>Update {{ student['first_name'] }} {{ student['last_name'] }}'s personal information.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <p class="{{ category }}" role="status">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+
+        <form action="{{ url_for('edit_student', student_id=student['id']) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" value="{{ student['first_name'] }}" maxlength="80" required>
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" value="{{ student['last_name'] }}" maxlength="80" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ student['email'] }}" maxlength="254" required>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ student['username'] }}" maxlength="50" required>
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" value="{{ student['phone'] }}" maxlength="40" required>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" value="{{ student['address'] }}" maxlength="300" required>
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" name="dob" value="{{ student['dob'] }}" required>
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                {% for option in ['Male', 'Female', 'Other', 'Prefer not to say'] %}
+                <option value="{{ option }}" {% if student['gender'] == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Save Student Details">
+        </form>
+        <p><a href="{{ url_for('staff_students') }}">Cancel and return to students</a> · <a href="{{ url_for('help_page') }}">How to use the system</a></p>
+    </main>
+</body>
+</html>

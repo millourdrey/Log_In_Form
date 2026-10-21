@@ -19,6 +19,7 @@
         {% endwith %}
 
         <form action="{{ url_for('create_account') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="role">Account Type:</label>
             <select id="role" name="role" required>
                 <option value="student">Student</option>
@@ -26,17 +27,17 @@
             </select>
 
             <label for="first_name">First Name:</label>
-            <input type="text" id="first_name" name="first_name" required>
+            <input type="text" id="first_name" name="first_name" maxlength="80" required>
             <label for="last_name">Last Name:</label>
-            <input type="text" id="last_name" name="last_name" required>
+            <input type="text" id="last_name" name="last_name" maxlength="80" required>
             <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email" maxlength="254" required>
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+            <input type="text" id="username" name="username" maxlength="50" required>
             <label for="phone">Phone Number:</label>
-            <input type="tel" id="phone" name="phone" required>
+            <input type="tel" id="phone" name="phone" maxlength="40" required>
             <label for="address">Address:</label>
-            <input type="text" id="address" name="address" required>
+            <input type="text" id="address" name="address" maxlength="300" required>
             <label for="dob">Date of Birth:</label>
             <input type="date" id="dob" name="dob" required>
             <label for="gender">Gender:</label>
@@ -48,9 +49,9 @@
                 <option value="Prefer not to say">Prefer not to say</option>
             </select>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" minlength="6" required>
+            <input type="password" id="password" name="password" minlength="12" required>
             <label for="confirm_password">Confirm Password:</label>
-            <input type="password" id="confirm_password" name="confirm_password" minlength="6" required>
+            <input type="password" id="confirm_password" name="confirm_password" minlength="12" required>
             <input type="submit" value="Create Account">
         </form>
 
@@ -65,7 +66,7 @@
                             <th>Username</th>
                             <th>Role</th>
                             <th>Status</th>
-                            <th>Action</th>
+                            <th>Account actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -77,8 +78,13 @@
                             <td><span class="status {{ account['status'] }}">{{ account['status'].title() }}</span></td>
                             <td>
                                 <form class="status-form" action="{{ url_for('update_account_status', account_id=account['id']) }}" method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="status" value="{{ 'inactive' if account['status'] == 'active' else 'active' }}">
                                     <button type="submit" class="status-button">{{ 'Deactivate' if account['status'] == 'active' else 'Activate' }}</button>
+                                </form>
+                                <form class="status-form delete-account-form" action="{{ url_for('delete_account', account_id=account['id']) }}" method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="status-button delete-button">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -90,7 +96,8 @@
             <p>No staff or student accounts have been created yet.</p>
             {% endif %}
         </section>
-        <p><a href="{{ url_for('dashboard') }}">Back to dashboard</a></p>
+        <p><a href="{{ url_for('dashboard') }}">Back to dashboard</a> · <a href="{{ url_for('help_page') }}">How to use the system</a></p>
     </main>
+    <script src="{{ url_for('static', filename='portal.js') }}" defer></script>
 </body>
 </html>

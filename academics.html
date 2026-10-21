@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Academics | School Portal</title>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="School logo" class="sidebar-logo">
+            <div class="brand">School Portal</div>
+            <nav>
+                <a href="{{ url_for('dashboard') }}">Home</a>
+                <a href="{{ url_for('academics') }}" class="active">Academics</a>
+                {% if role in ['admin', 'staff'] %}
+                <a href="{{ url_for('staff_students') }}">Students</a>
+                <a href="{{ url_for('announcements') }}">Announcements</a>
+                {% endif %}
+                {% if role == 'admin' %}<a href="{{ url_for('create_account') }}">Manage Accounts</a>{% endif %}
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('help_page') }}">How to Use</a>
+            </nav>
+            <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-button">Sign Out</button>
+            </form>
+        </aside>
+
+        <main class="dashboard-content">
+            <header class="dashboard-header">
+                <div>
+                    <p class="eyebrow">{{ role.title() }} workspace</p>
+                    <h1>Academics</h1>
+                    <p>Classes, attendance, grades, and the school timetable.</p>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                <p class="flash-message {{ category }}" role="status">{{ message }}</p>
+                {% endfor %}
+            {% endwith %}
+
+            <section class="academic-card" aria-labelledby="academic-help-title">
+                <h2 id="academic-help-title">How to add a class and record attendance</h2>
+                {% if role == 'admin' %}
+                <p>Use <strong>Add a subject or class</strong> below. Then enroll a student in that class. Once students are enrolled, use <strong>Record attendance</strong> and save their status for the selected date.</p>
+                {% elif role == 'staff' %}
+                <p>Add a subject/class to your classes, enroll active students in it, then use <strong>Record attendance</strong>. You can edit students from the Students page and edit classes assigned to you.</p>
+                {% else %}
+                <p>Students can view their classes and attendance here. Administrators and assigned staff manage classes and attendance.</p>
+                {% endif %}
+            </section>
+
+            {% if role in ['admin', 'staff'] %}
+            <section class="academic-card">
+                <h2>{% if role == 'admin' %}Add a subject or class{% else %}Add a subject or class to your classes{% endif %}</h2>
+                <form action="{{ url_for('academics') }}" method="post" class="academic-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="create_class">
+                    <label for="class-name">Subject name</label>
+                    <input id="class-name" name="name" maxlength="100" placeholder="e.g. Mathematics" required>
+                    <label for="class-section">Section</label>
+                    <input id="class-section" name="section" maxlength="40" placeholder="e.g. Grade 10 - A" required>
+                    {% if role == 'admin' %}
+                    <label for="class-staff">Assign teacher</label>
+                    <select id="class-staff" name="staff_id">
+                        <option value="">Unassigned</option>
+                        {% for staff in staff_members %}
+                        <option value="{{ staff['id'] }}">{{ staff['first_name'] }} {{ staff['last_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                    {% else %}
+                    <span>Teacher</span>
+                    <span>Your account</span>
+                    {% endif %}
+                    <button type="submit">Create class</button>
+                </form>
+            </section>
+
+            {% if classes %}
+            <section class="academic-card">
+                <h2>Add to timetable</h2>
+                <form action="{{ url_for('academics') }}" method="post" class="academic-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="schedule">
+                    <label for="schedule-class">Class</label>
+                    <select id="schedule-class" name="class_id" required>
+                        {% for school_class in classes %}
+                        <option value="{{ school_class['id'] }}">{{ school_class['name'] }} · {{ school_class['section'] }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="weekday">Day</label>
+                    <select id="weekday" name="weekday" required>
+                        <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                        <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+                    </select>
+                    <label for="start-time">Start time</label>
+                    <input id="start-time" type="time" name="start_time" required>
+                    <label for="end-time">End time</label>
+                    <input id="end-time" type="time" name="end_time" required>
+                    <label for="room">Room</label>
+                    <input id="room" name="room" maxlength="80" placeholder="e.g. Room 204">
+                    <button type="submit">Add schedule</button>
+                </form>
+            </section>
+            {% endif %}
+            {% endif %}
+
+            {% if role in ['admin', 'staff'] %}
+            {% if classes %}
+            {% if students %}
+            <section class="academic-card">
+                <h2>Enroll a student</h2>
+                <form action="{{ url_for('academics') }}" method="post" class="academic-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="enroll">
+                    <label for="enroll-class">Class</label>
+                    <select id="enroll-class" name="class_id" required>
+                        {% for school_class in classes %}
+                        <option value="{{ school_class['id'] }}">{{ school_class['name'] }} · {{ school_class['section'] }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="enroll-student">Student</label>
+                    <select id="enroll-student" name="student_id" required>
+                        {% for student in students %}
+                        <option value="{{ student['id'] }}">{{ student['first_name'] }} {{ student['last_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">Enroll student</button>
+                </form>
+            </section>
+            {% else %}
+            <section class="academic-card">
+                <h2>Enroll a student</h2>
+                <p class="empty-state">There are no active student accounts to enroll. Create a student account first.</p>
+            </section>
+            {% endif %}
+            {% if enrolled_students %}
+            <section class="academic-card">
+                <h2>Record attendance</h2>
+                <form action="{{ url_for('academics') }}" method="post" class="academic-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="attendance">
+                    <label for="attendance-class">Class</label>
+                    <select id="attendance-class" name="class_id" class="class-picker" required>
+                        {% for school_class in classes %}
+                        <option value="{{ school_class['id'] }}">{{ school_class['name'] }} · {{ school_class['section'] }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="attendance-student">Enrolled student</label>
+                    <select id="attendance-student" name="student_id" class="student-picker" required>
+                        {% for school_class in classes %}
+                            {% for student in enrolled_students %}
+                            {% if student['class_id'] == school_class['id'] %}
+                            <option value="{{ student['student_id'] }}" data-class="{{ student['class_id'] }}">{{ student['first_name'] }} {{ student['last_name'] }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                    <label for="attendance-date">Date</label>
+                    <input id="attendance-date" type="date" name="attendance_date" value="{{ today }}" required>
+                    <label for="attendance-status">Status</label>
+                    <select id="attendance-status" name="status" required>
+                        <option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option>
+                    </select>
+                    <button type="submit">Save attendance</button>
+                </form>
+            </section>
+
+            <section class="academic-card">
+                <h2>Record a grade</h2>
+                <form action="{{ url_for('academics') }}" method="post" class="academic-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="grade">
+                    <label for="grade-class">Class</label>
+                    <select id="grade-class" name="class_id" class="class-picker" required>
+                        {% for school_class in classes %}
+                        <option value="{{ school_class['id'] }}">{{ school_class['name'] }} · {{ school_class['section'] }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="grade-student">Enrolled student</label>
+                    <select id="grade-student" name="student_id" class="student-picker" required>
+                        {% for school_class in classes %}
+                            {% for student in enrolled_students %}
+                            {% if student['class_id'] == school_class['id'] %}
+                            <option value="{{ student['student_id'] }}" data-class="{{ student['class_id'] }}">{{ student['first_name'] }} {{ student['last_name'] }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                    <label for="assessment">Assessment name</label>
+                    <input id="assessment" name="assessment" maxlength="100" placeholder="e.g. Midterm exam" required>
+                    <label for="score">Score</label>
+                    <input id="score" type="number" name="score" min="0" step="any" required>
+                    <label for="max-score">Maximum score</label>
+                    <input id="max-score" type="number" name="max_score" min="0.01" step="any" required>
+                    <button type="submit">Save grade</button>
+                </form>
+            </section>
+            {% else %}
+            <section class="academic-card">
+                <h2>Record attendance</h2>
+                <p class="empty-state">There are no enrolled students in your classes yet. Enroll an active student above before recording attendance.</p>
+            </section>
+            {% endif %}
+            {% else %}
+            <section class="academic-card">
+                <h2>Record attendance</h2>
+                {% if role == 'admin' %}
+                <p class="empty-state">No classes exist yet. Add a subject or class above, then enroll at least one active student.</p>
+                {% else %}
+                <p class="empty-state">No classes are assigned to you yet. Add a subject or class above to get started.</p>
+                {% endif %}
+            </section>
+            {% endif %}
+            {% endif %}
+
+            <section class="academic-card">
+                <h2>{% if role == 'student' %}My classes{% else %}Classes{% endif %}</h2>
+                {% if classes %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Subject / class</th><th>Section</th><th>Teacher</th><th>Students</th>
+                                {% if role in ['admin', 'staff'] %}<th>Edit subject/class</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for school_class in classes %}
+                            <tr>
+                                <td>{{ school_class['name'] }}</td>
+                                <td>{{ school_class['section'] }}</td>
+                                <td>{{ (school_class['first_name'] ~ ' ' ~ school_class['last_name']) if school_class['first_name'] else 'Unassigned' }}</td>
+                                <td>{{ school_class['student_count'] }}</td>
+                                {% if role in ['admin', 'staff'] %}
+                                <td>
+                                    <form action="{{ url_for('academics') }}" method="post" class="academic-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="action" value="update_class">
+                                        <input type="hidden" name="class_id" value="{{ school_class['id'] }}">
+                                        <label for="class-name-{{ school_class['id'] }}">Subject name</label>
+                                        <input id="class-name-{{ school_class['id'] }}" name="name" value="{{ school_class['name'] }}" maxlength="100" required>
+                                        <label for="class-section-{{ school_class['id'] }}">Section</label>
+                                        <input id="class-section-{{ school_class['id'] }}" name="section" value="{{ school_class['section'] }}" maxlength="40" required>
+                                        {% if role == 'admin' %}
+                                        <label for="class-staff-{{ school_class['id'] }}">Teacher</label>
+                                        <select id="class-staff-{{ school_class['id'] }}" name="staff_id">
+                                            <option value="">Unassigned</option>
+                                            {% for staff in staff_members %}
+                                            <option value="{{ staff['id'] }}" {% if school_class['staff_id'] == staff['id'] %}selected{% endif %}>{{ staff['first_name'] }} {{ staff['last_name'] }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        {% else %}
+                                        <span>Teacher</span>
+                                        <span>Your account</span>
+                                        {% endif %}
+                                        <button type="submit">Save changes</button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">No classes are available yet.</p>
+                {% endif %}
+            </section>
+
+            <section class="academic-card">
+                <h2>Timetable</h2>
+                {% if schedules %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Room</th></tr></thead>
+                        <tbody>
+                            {% for item in schedules %}
+                            <tr><td>{{ item['weekday'] }}</td><td>{{ item['start_time'] }}–{{ item['end_time'] }}</td><td>{{ item['name'] }} · {{ item['section'] }}</td><td>{{ item['room'] or '—' }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">No timetable entries yet.</p>
+                {% endif %}
+            </section>
+
+            <section class="academic-card">
+                <h2>{% if role == 'student' %}My attendance{% else %}Attendance records{% endif %}</h2>
+                {% if attendance_records %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Date</th><th>Class</th>{% if role != 'student' %}<th>Student</th>{% endif %}<th>Status</th></tr></thead>
+                        <tbody>
+                            {% for item in attendance_records %}
+                            <tr>
+                                <td>{{ item['attendance_date'] }}</td><td>{{ item['name'] }} · {{ item['section'] }}</td>
+                                {% if role != 'student' %}<td>{{ item['first_name'] }} {{ item['last_name'] }}</td>{% endif %}
+                                <td><span class="status {{ item['status'] }}">{{ item['status'].title() }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">No attendance records yet.</p>
+                {% endif %}
+            </section>
+
+            <section class="academic-card">
+                <h2>{% if role == 'student' %}My grades{% else %}Grade records{% endif %}</h2>
+                {% if grade_records %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Assessment</th><th>Class</th>{% if role != 'student' %}<th>Student</th>{% endif %}<th>Score</th></tr></thead>
+                        <tbody>
+                            {% for item in grade_records %}
+                            <tr>
+                                <td>{{ item['assessment'] }}</td><td>{{ item['name'] }} · {{ item['section'] }}</td>
+                                {% if role != 'student' %}<td>{{ item['first_name'] }} {{ item['last_name'] }}</td>{% endif %}
+                                <td>{{ item['score']|round(2) }} / {{ item['max_score']|round(2) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">No grades have been recorded yet.</p>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+    {% if role in ['admin', 'staff'] %}
+    <script src="{{ url_for('static', filename='portal.js') }}" defer></script>
+    {% endif %}
+</body>
+</html>

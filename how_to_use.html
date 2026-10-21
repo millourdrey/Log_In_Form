@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>How to Use the School Portal</title>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="School logo" class="sidebar-logo">
+            <div class="brand">School Portal</div>
+            <nav>
+                <a href="{{ url_for('dashboard') }}">Home</a>
+                <a href="{{ url_for('academics') }}">Academics</a>
+                {% if user['role'] in ['admin', 'staff'] %}
+                <a href="{{ url_for('staff_students') }}">Students</a>
+                <a href="{{ url_for('announcements') }}">Announcements</a>
+                {% endif %}
+                {% if user['role'] == 'admin' %}
+                <a href="{{ url_for('create_account') }}">Manage Accounts</a>
+                {% endif %}
+                <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('change_password') }}">Change Password</a>
+                <a href="{{ url_for('help_page') }}" class="active">How to Use</a>
+            </nav>
+            <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-button">Sign Out</button>
+            </form>
+        </aside>
+
+        <main class="dashboard-content">
+            <header class="dashboard-header">
+                <div>
+                    <p class="eyebrow">{{ user['role'].title() }} guide</p>
+                    <h1>How to Use the School Portal</h1>
+                    <p>Hello, {{ user['first_name'] }}. Follow the steps for your account type.</p>
+                </div>
+            </header>
+
+            <section class="academic-card">
+                <h2>Start here</h2>
+                <ol>
+                    <li>Use the menu on the left to open Home, Academics, Profile, or the other pages available to your role.</li>
+                    <li>After submitting a form, look for a message at the top of the page to confirm success or explain an error.</li>
+                    <li>Choose <strong>Sign Out</strong> when you have finished using the portal.</li>
+                    <li>Use <a href="{{ url_for('change_password') }}">Change Password</a> to replace your password, especially if it was shared or used as an example.</li>
+                </ol>
+            </section>
+
+            {% if user['role'] == 'admin' %}
+            <section class="academic-card">
+                <h2>Administrator steps</h2>
+                <ol>
+                    <li>Open <a href="{{ url_for('create_account') }}">Manage Accounts</a> to create staff and student accounts. Complete the required details and set a password for each new account.</li>
+                    <li>Open <a href="{{ url_for('academics') }}">Academics</a>. Add each subject/class with its section, and optionally assign an active staff member.</li>
+                    <li>In Academics, enroll active students in classes. A student needs an enrollment before attendance or grades can be recorded for that class.</li>
+                    <li>Use the timetable form to choose a class, day, start/end time, and room.</li>
+                    <li>Record attendance and grades in Academics. Pick the class and an enrolled student before saving.</li>
+                    <li>Open <a href="{{ url_for('announcements') }}">Announcements</a> to publish a title and message for the school community.</li>
+                    <li>To disable an account, deactivate it from Manage Accounts. Deleting an account is permanent and may remove related school records.</li>
+                </ol>
+            </section>
+            {% elif user['role'] == 'staff' %}
+            <section class="academic-card">
+                <h2>Staff steps</h2>
+                <ol>
+                    <li>Open <a href="{{ url_for('academics') }}">Academics</a> to create a subject/class. Classes you create are assigned to your account.</li>
+                    <li>Enroll active students in your classes. Students must be enrolled before you can record their attendance or grades.</li>
+                    <li>Use the timetable form to add class meeting days, times, and rooms.</li>
+                    <li>Use Record attendance to select your class, enrolled student, date, and status. Use the grade form to record an assessment score.</li>
+                    <li>Open <a href="{{ url_for('staff_students') }}">Students</a> and select Edit student to update a student's personal details.</li>
+                    <li>Use <a href="{{ url_for('announcements') }}">Announcements</a> to share school updates.</li>
+                </ol>
+            </section>
+            {% else %}
+            <section class="academic-card">
+                <h2>Student steps</h2>
+                <ol>
+                    <li>Open <a href="{{ url_for('academics') }}">Academics</a> to view classes you are enrolled in, their timetable, your attendance, and your grades.</li>
+                    <li>Open <a href="{{ url_for('profile') }}">Profile</a> and choose Edit Profile to update your personal details.</li>
+                    <li>Read the latest school announcements on your Home dashboard.</li>
+                    <li>If a class or record is missing or incorrect, contact a school staff member.</li>
+                </ol>
+            </section>
+            {% endif %}
+
+            <section class="academic-card">
+                <h2>Common questions</h2>
+                <ul>
+                    <li><strong>I cannot find a class.</strong> Students must be enrolled in a class. Staff can only see classes assigned to them.</li>
+                    <li><strong>I cannot record attendance.</strong> Confirm the class has at least one active enrolled student, then select that class and student.</li>
+                    <li><strong>My form showed an error.</strong> Read the message near the top of the page, correct the indicated field, and submit again.</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

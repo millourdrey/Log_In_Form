@@ -1,38 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Dashboard</title>
 </head>
-
 <body>
-
     <div class="dashboard">
-
         <aside class="sidebar">
-
             <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="sidebar-logo">
-
-            <div class="brand">
-                School Portal
-            </div>
-
+            <div class="brand">School Portal</div>
             <nav>
                 <a href="{{ url_for('dashboard') }}" class="active">Home</a>
+                <a href="{{ url_for('academics') }}">Academics</a>
                 <a href="{{ url_for('profile') }}">Profile</a>
+                <a href="{{ url_for('help_page') }}">How to Use</a>
                 {% if user['role'] == 'admin' %}
                 <a href="{{ url_for('create_account') }}">Manage Accounts</a>
                 <a href="{{ url_for('announcements') }}">Announcements</a>
                 {% elif user['role'] == 'staff' %}
-                <a href="{{ url_for('staff_students') }}">Student Roster</a>
+                <a href="{{ url_for('staff_students') }}">Students</a>
                 <a href="{{ url_for('announcements') }}">Announcements</a>
                 {% endif %}
             </nav>
-
-            <a href="{{ url_for('logout') }}" class="logout">Sign Out</a>
+            <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="logout-button">Sign Out</button>
+            </form>
         </aside>
 
         <main class="dashboard-content">
@@ -49,17 +44,19 @@
             <section class="welcome-box role-welcome role-{{ user['role'] }}">
                 {% if user['role'] == 'admin' %}
                 <h2>Administration</h2>
-                <p>Manage school accounts, keep the community informed, and review account status.</p>
+                <p>Manage school accounts, classes, timetables, and updates for the school community.</p>
                 <a href="{{ url_for('create_account') }}" class="main-button">Manage School Accounts</a>
+                <a href="{{ url_for('academics') }}" class="secondary-button">Manage Academics</a>
                 {% elif user['role'] == 'staff' %}
                 <h2>Staff workspace</h2>
-                <p>Find active students in the school roster and share important updates with the community.</p>
-                <a href="{{ url_for('staff_students') }}" class="main-button">Open Student Roster</a>
-                <a href="{{ url_for('announcements') }}" class="secondary-button">Post an Announcement</a>
+                <p>Manage attendance and grades for your classes, view the timetable, and share school updates.</p>
+                <a href="{{ url_for('staff_students') }}" class="main-button">View Students</a>
+                <a href="{{ url_for('academics') }}" class="secondary-button">Open Academics</a>
                 {% else %}
                 <h2>Student portal</h2>
-                <p>Check school announcements and keep your personal information current.</p>
-                <a href="{{ url_for('profile') }}" class="main-button">View My Profile</a>
+                <p>Check your classes, timetable, attendance, grades, and school announcements.</p>
+                <a href="{{ url_for('academics') }}" class="main-button">View My Academics</a>
+                <a href="{{ url_for('profile') }}" class="secondary-button">View My Profile</a>
                 {% endif %}
             </section>
 
@@ -86,9 +83,9 @@
                 <div class="section-heading">
                     <div>
                         <h2 id="notice-board-title">School Announcements</h2>
-                    <p>Important updates from the school community.</p>
+                        <p>Important updates from the school community.</p>
                     </div>
-                {% if user['role'] in ['admin', 'staff'] %}
+                    {% if user['role'] in ['admin', 'staff'] %}
                     <a href="{{ url_for('announcements') }}" class="main-button">Manage Announcements</a>
                     {% endif %}
                 </div>
@@ -114,7 +111,6 @@
                     </div>
                     <a href="{{ url_for('create_account') }}" class="main-button">Manage Accounts</a>
                 </div>
-
                 {% if account_statuses %}
                 <div class="table-wrapper">
                     <table>
@@ -140,6 +136,5 @@
             {% endif %}
         </main>
     </div>
-
 </body>
 </html>
